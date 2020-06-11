@@ -1,0 +1,18 @@
+# Geddit
+
+Learn about new Gemini sites and pages on Geddit. Geddit is anonymous, there is no IP tracking.
+
+=> /post Submit a link
+
+## Posts
+
+{{range .}}
+
+### {{.Message}}
+=> {{.Url}}
+posted {{.Ago}}
+=> /s/{{.ID}} 💬 {{.CommentsCount}}
+
+{{else}}
+No posts found :(
+{{end}}

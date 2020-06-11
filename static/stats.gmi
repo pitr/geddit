@@ -1,0 +1,9 @@
+# Geddit Stats
+
+=> / 🏠 Home
+
+{{range .}}
+{{.Day}} - {{.Count}}
+{{else}}
+No stats yet :(
+{{end}}

@@ -1,0 +1,19 @@
+# Geddit
+
+=> / 🏠 Home
+
+## {{.Message}}
+
+=> {{.Url}} {{.Url}}
+
+Posted {{.Ago}}
+
+## Comments ({{.CommentsCount}})
+
+=> /c/{{.ID}} Leave a comment
+
+{{range .Comments}}
+* ({{.Ago}}) {{.Message}}
+{{else}}
+No comments yet :(
+{{end}}
