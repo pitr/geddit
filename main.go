@@ -43,22 +43,24 @@ func main() {
 	g := gig.New()
 
 	g.Renderer = &Template{}
-	g.Use(middleware.Logger())
+	g.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Format: "path=${uri} status=${status} duration=${latency} ${error}\n",
+	}))
 	g.Use(middleware.Recover())
 
 	g.Handle("/", handleHome)
 	g.Handle("/post", handlePost)
 	g.Handle("/s/:id", handleShow)
 	g.Handle("/c/:id", handlePostComment)
-	g.Handle("/stats", handleStats)
+	g.Handle("/stats", handleStats, middleware.CertAuth(middleware.ValidateHasCertificate))
 
-	g.Logger.Fatal(g.StartTLS(":"+port, "gemininews.crt", "gemininews.key"))
+	panic(g.Run(":"+port, "gemininews.crt", "gemininews.key"))
 }
 
 func handleHome(c gig.Context) error {
 	err := db.CountPageview()
 	if err != nil {
-		c.Logger().Errorf("could not count pageview: %s", err)
+		fmt.Printf("could not count pageview: %s", err)
 	}
 
 	posts, err := db.HottestPosts()
@@ -112,7 +114,7 @@ func handlePost(c gig.Context) error {
 func handleShow(c gig.Context) error {
 	err := db.CountPageview()
 	if err != nil {
-		c.Logger().Errorf("could not count pageview: %s", err)
+		fmt.Printf("could not count pageview: %s", err)
 	}
 
 	postId, err := strconv.Atoi(c.Param("id"))
@@ -121,7 +123,7 @@ func handleShow(c gig.Context) error {
 	}
 	post, err := db.GetPost(uint(postId))
 	if err != nil {
-		c.Logger().Errorf("could not show a post: %s", err)
+		fmt.Printf("could not show a post: %s", err)
 		return gig.NewErrorFrom(gig.ErrNotFound, fmt.Sprintf("Could not find post id '%d'", postId))
 	}
 	return c.Render(gig.StatusSuccess, "show", post)
