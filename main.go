@@ -1,13 +1,10 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"io"
 	"net/url"
 	"strconv"
 	"strings"
-	"text/template"
 
 	"github.com/pitr/gemininews/db"
 
@@ -16,23 +13,6 @@ import (
 )
 
 var port = "1965"
-
-type Template struct{}
-
-func (*Template) Render(w io.Writer, name string, data interface{}, c gig.Context) error {
-	var t *template.Template
-	switch name {
-	case "index":
-		t = indexT
-	case "show":
-		t = showT
-	case "stats":
-		t = statsT
-	default:
-		return errors.New("unknown template")
-	}
-	return t.ExecuteTemplate(w, name, data)
-}
 
 func main() {
 	err := db.Initialize()

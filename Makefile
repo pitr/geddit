@@ -1,8 +1,8 @@
 .PHONY: clean run deploy build.local build.linux
 
 BINARY        ?= gemininews
-SOURCES       = $(shell find . -name '*.go') assets.go
-STATICS       = $(shell find static -name '*.*')
+SOURCES       = $(shell find . -name '*.go') tmpl.go
+STATICS       = $(shell find tmpl -name '*.*')
 BUILD_FLAGS   ?= -v
 PORT          ?= 1965
 LDFLAGS       ?= -w -s -X main.port=$(PORT)
@@ -25,8 +25,8 @@ rollback:
 	ssh ec2-user@$(PRODUCTION) 'mv $(BINARY)-old $(BINARY)'
 	ssh ec2-user@$(PRODUCTION) 'sudo systemctl restart $(BINARY)'
 
-assets.go: $(STATICS)
-	go run cmd/build_assets.go $(STATICS)
+tmpl.go: $(STATICS)
+	go run cmd/build_tmpl.go $(STATICS)
 
 build.local: build/$(BINARY)
 build.linux: build/linux/$(BINARY)
