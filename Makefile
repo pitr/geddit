@@ -4,8 +4,7 @@ BINARY        ?= gemininews
 SOURCES       = $(shell find . -name '*.go') tmpl.go
 STATICS       = $(shell find tmpl -name '*.*')
 BUILD_FLAGS   ?= -v
-PORT          ?= 1965
-LDFLAGS       ?= -w -s -X main.port=$(PORT)
+LDFLAGS       ?= -w -s
 
 default: run
 

@@ -9,10 +9,7 @@ import (
 	"github.com/pitr/gemininews/db"
 
 	"github.com/pitr/gig"
-	"github.com/pitr/gig/middleware"
 )
-
-var port = "1965"
 
 func main() {
 	err := db.Initialize()
@@ -20,21 +17,17 @@ func main() {
 		panic("could not initialize DB")
 	}
 
-	g := gig.New()
+	g := gig.Default()
 
 	g.Renderer = &Template{}
-	g.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-		Format: "path=${uri} status=${status} duration=${latency} ${error}\n",
-	}))
-	g.Use(middleware.Recover())
 
 	g.Handle("/", handleHome)
 	g.Handle("/post", handlePost)
 	g.Handle("/s/:id", handleShow)
 	g.Handle("/c/:id", handlePostComment)
-	g.Handle("/stats", handleStats, middleware.CertAuth(middleware.ValidateHasCertificate))
+	g.Handle("/stats", handleStats, gig.CertAuth(gig.ValidateHasCertificate))
 
-	panic(g.Run(":"+port, "gemininews.crt", "gemininews.key"))
+	panic(g.Run("gemininews.crt", "gemininews.key"))
 }
 
 func handleHome(c gig.Context) error {
