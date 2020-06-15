@@ -18,6 +18,15 @@ func main() {
 	}
 
 	g := gig.Default()
+	g.Use(func(next gig.HandlerFunc) gig.HandlerFunc {
+		return func(c gig.Context) (err error) {
+			err = next(c)
+			if c.Response().Status < 30 && c.Path() != "/stats" {
+				_ = db.CountPageview()
+			}
+			return
+		}
+	})
 
 	g.Renderer = &Template{}
 
@@ -31,11 +40,6 @@ func main() {
 }
 
 func handleHome(c gig.Context) error {
-	err := db.CountPageview()
-	if err != nil {
-		fmt.Printf("could not count pageview: %s", err)
-	}
-
 	posts, err := db.HottestPosts()
 	if err != nil {
 		return gig.NewErrorFrom(gig.ErrServerUnavailable, "Could not load main page")
@@ -85,11 +89,6 @@ func handlePost(c gig.Context) error {
 }
 
 func handleShow(c gig.Context) error {
-	err := db.CountPageview()
-	if err != nil {
-		fmt.Printf("could not count pageview: %s", err)
-	}
-
 	postId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return gig.NewErrorFrom(gig.ErrBadRequest, "Invalid path")
