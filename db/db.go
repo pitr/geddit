@@ -1,8 +1,8 @@
 package db
 
-// hottest = Story.base.positive_ranked
-
 import (
+	"fmt"
+	"os"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -36,12 +36,27 @@ func (c *Comment) Ago() string {
 	return time.Since(c.CreatedAt).Truncate(time.Minute).String() + " ago"
 }
 
+func getEnv(k, def string) string {
+	v := os.Getenv(k)
+	if v == "" {
+		v = def
+	}
+	return v
+}
+
 func Initialize() error {
-	var err error
-	db, err = gorm.Open("mysql", "root:@/gemininews?charset=utf8mb4&parseTime=True&loc=Local")
+	var (
+		err    error
+		dbUser = getEnv("DB_USER", "root")
+		dbPass = getEnv("DB_PASS", "")
+		dbHost = getEnv("DB_HOST", "127.0.0.1")
+		dbName = getEnv("DB_NAME", "gemininews")
+		url    = fmt.Sprintf("%s:%s@(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", dbUser, dbPass, dbHost, dbName)
+	)
+	db, err = gorm.Open("mysql", url)
 
 	if err != nil {
-		panic("failed to connect database")
+		panic("failed to connect to database")
 	}
 
 	db.AutoMigrate(&Post{}, &Comment{})

@@ -1,4 +1,4 @@
-module github.com/pitr/gemininews
+module github.com/pitr/geddit
 
 go 1.14
 

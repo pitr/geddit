@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pitr/gemininews/db"
+	"github.com/pitr/geddit/db"
 
 	"github.com/pitr/gig"
 )
@@ -36,7 +36,7 @@ func main() {
 	g.Handle("/c/:id", handlePostComment)
 	g.Handle("/stats", handleStats, gig.CertAuth(gig.ValidateHasCertificate))
 
-	panic(g.Run("gemininews.crt", "gemininews.key"))
+	panic(g.Run("geddit.crt", "geddit.key"))
 }
 
 func handleHome(c gig.Context) error {
