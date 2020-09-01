@@ -1,4 +1,4 @@
-.PHONY: clean run deploy build.local build.linux build.docker build.push
+.PHONY: clean run deploy build.local build.linux build.docker deploy
 
 BINARY        ?= geddit
 SOURCES       = $(shell find . -name '*.go') tmpl.go
@@ -33,5 +33,5 @@ build/linux/$(BINARY): $(SOURCES)
 build.docker: build.linux
 	docker build --rm -t "$(IMAGE):$(TAG)" -f $(DOCKERFILE) .
 
-build.push: build.docker
+deploy: build.docker
 	docker push "$(IMAGE):$(TAG)"
