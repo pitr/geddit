@@ -5,7 +5,6 @@ Learn about new Gemini sites and pages on Geddit. Geddit is anonymous, there is 
 => /post Submit a link
 
 ## Posts
-
 {{range .}}
 ### {{.Message}}
 => {{.Url}}
