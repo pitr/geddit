@@ -67,7 +67,13 @@ func handleHome(c gig.Context) error {
 		return gig.NewErrorFrom(gig.ErrServerUnavailable, "Could not load main page")
 	}
 
-	return c.Render(gig.StatusSuccess, "index", posts)
+	return c.Render("index", struct{
+		Posts []db.Post
+		Old bool
+	}{
+		Posts: posts,
+		Old: strings.Contains(c.RequestURI(), "geddit.pitr.ca"),
+	})
 }
 
 func handlePost(c gig.Context) error {
@@ -120,7 +126,7 @@ func handleShow(c gig.Context) error {
 		fmt.Printf("could not show a post: %s", err)
 		return gig.NewErrorFrom(gig.ErrNotFound, fmt.Sprintf("Could not find post id '%d'", postId))
 	}
-	return c.Render(gig.StatusSuccess, "show", post)
+	return c.Render("show", post)
 }
 
 func handlePostComment(c gig.Context) error {
@@ -152,5 +158,5 @@ func handleStats(c gig.Context) error {
 	if err != nil {
 		return err
 	}
-	return c.Render(gig.StatusSuccess, "stats", result)
+	return c.Render("stats", result)
 }

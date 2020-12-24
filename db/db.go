@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"time"
 
@@ -24,6 +25,14 @@ func (p *Post) CommentsCount() int {
 
 func (p *Post) Ago() string {
 	return time.Since(p.CreatedAt).Truncate(time.Minute).String() + " ago"
+}
+
+func (p Post) Domain() string {
+	u, err := url.Parse(p.Url)
+	if err != nil {
+		return p.Url
+	}
+	return u.Hostname()
 }
 
 type Comment struct {

@@ -1,13 +1,15 @@
 # Geddit
-
+{{if .Old}}IMPORTANT This capsule has moved to geddit.glv.one:
+=> gemini://geddit.glv.one New capsule
+{{end}}
 Learn about new Gemini sites and pages on Geddit. Geddit is anonymous, there is no IP tracking.
 
-=> /post Submit a link
+=> /post ✏️ Submit a link
 
 ## Posts
-{{range .}}
+{{range .Posts}}
 ### {{.Message}}
-=> {{.Url}}
+=> {{.Url}} {{.Domain}}
 posted {{.Ago}}
 => /s/{{.ID}} 💬 {{.CommentsCount}}
 {{else}}
