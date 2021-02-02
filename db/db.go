@@ -27,6 +27,10 @@ func (p *Post) Ago() string {
 	return time.Since(p.CreatedAt).Truncate(time.Minute).String() + " ago"
 }
 
+func (p *Post) Date() string {
+	return p.CreatedAt.Format("2006-01-02")
+}
+
 func (p Post) Domain() string {
 	u, err := url.Parse(p.Url)
 	if err != nil {

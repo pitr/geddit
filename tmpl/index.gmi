@@ -8,10 +8,11 @@ Learn about new Gemini sites and pages on Geddit. Geddit is anonymous, there is 
 
 ## Posts
 {{range .Posts}}
-### {{.Message}}
-=> {{.Url}} {{.Domain}}
-posted {{.Ago}}
-=> /s/{{.ID}} 💬 {{.CommentsCount}}
+=> {{.Url}} {{.Date}} - {{.Message}}
+=> /s/{{.ID}} {{.Date}} - 💬 {{.CommentsCount}} ~ {{.Domain}}
 {{else}}
 No posts found :(
 {{end}}
+
+Made with ❤️ in Berlin
+=> https://github.com/pitr/geddit [source code]
