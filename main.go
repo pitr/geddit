@@ -16,7 +16,7 @@ import (
 func main() {
 	err := db.Initialize()
 	if err != nil {
-		panic("could not initialize DB")
+		panic(err)
 	}
 
 	g := gig.Default()
@@ -62,17 +62,17 @@ func main() {
 }
 
 func handleHome(c gig.Context) error {
-	posts, err := db.HottestPosts()
+	posts, err := db.Latest()
 	if err != nil {
 		return gig.NewErrorFrom(gig.ErrServerUnavailable, "Could not load main page")
 	}
 
-	return c.Render("index", struct{
+	return c.Render("index", struct {
 		Posts []db.Post
-		Old bool
+		Old   bool
 	}{
 		Posts: posts,
-		Old: strings.Contains(c.RequestURI(), "geddit.pitr.ca"),
+		Old:   strings.Contains(c.RequestURI(), "geddit.pitr.ca"),
 	})
 }
 

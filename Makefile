@@ -25,12 +25,12 @@ build.local: build/$(BINARY)
 build.linux: build/linux/$(BINARY)
 
 build/$(BINARY): $(SOURCES)
-	CGO_ENABLED=0 go build -o build/$(BINARY) $(BUILD_FLAGS) -ldflags "$(LDFLAGS)" .
+	CGO_ENABLED=1 go build -o build/$(BINARY) $(BUILD_FLAGS) -ldflags "$(LDFLAGS)" .
 
 build/linux/$(BINARY): $(SOURCES)
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build $(BUILD_FLAGS) -o build/linux/$(BINARY) -ldflags "$(LDFLAGS)" .
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build $(BUILD_FLAGS) -o build/linux/$(BINARY) -ldflags "$(LDFLAGS)" .
 
-build.docker: build.linux
+build.docker: build.local
 	docker build --rm -t "$(IMAGE):$(TAG)" -f $(DOCKERFILE) .
 
 deploy: build.docker

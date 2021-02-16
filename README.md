@@ -3,7 +3,6 @@
 ## Requirements
 
 - Go v1.14+
-- MySQL
 
 ## Development
 
