@@ -85,6 +85,7 @@ func handlePost(c gig.Context) error {
 	if err != nil {
 		return gig.NewErrorFrom(gig.ErrServerUnavailable, "Could not save your post")
 	}
+	post = strings.TrimSpace(post)
 	if len(post) < 5 {
 		return gig.NewErrorFrom(gig.ErrBadRequest, "Your post is too short, please check it")
 	}
@@ -141,6 +142,7 @@ func handlePostComment(c gig.Context) error {
 	if err != nil {
 		return gig.NewErrorFrom(gig.ErrBadRequest, "Could not parse comment")
 	}
+	comment = strings.TrimSpace(comment)
 	if len(comment) < 3 {
 		return gig.NewErrorFrom(gig.ErrBadRequest, "Your comment is too short, please check it")
 	}
