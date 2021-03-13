@@ -1,7 +1,7 @@
 .PHONY: clean run deploy build.local build.linux build.docker deploy
 
 BINARY        ?= geddit
-SOURCES       = $(shell find . -name '*.go') tmpl.go
+SOURCES       = $(shell find . -name '*.go')
 STATICS       = $(shell find tmpl -name '*.*')
 VERSION       := $(shell date '+%Y%m%d%H%M%S')
 IMAGE         ?= deploy.glv.one/pitr/$(BINARY)
@@ -16,9 +16,6 @@ clean:
 
 run: build.local
 	./build/$(BINARY)
-
-tmpl.go: $(STATICS)
-	go run cmd/build_tmpl.go $(STATICS)
 
 build.local: build/$(BINARY)
 build.linux: build/linux/$(BINARY)

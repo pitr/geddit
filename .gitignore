@@ -1,4 +1,3 @@
-tmpl.go
 *.crt
 *.key
 geddit.db

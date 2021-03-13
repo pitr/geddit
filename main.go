@@ -2,16 +2,30 @@ package main
 
 import (
 	"crypto/tls"
+	"embed"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/url"
 	"strconv"
 	"strings"
+	"text/template"
 
 	"github.com/pitr/geddit/db"
 
 	"github.com/pitr/gig"
 )
+
+//go:embed tmpl/*.gmi
+var tmpls embed.FS
+
+type Template struct {
+	t *template.Template
+}
+
+func (t *Template) Render(w io.Writer, name string, data interface{}, _ gig.Context) error {
+	return t.t.ExecuteTemplate(w, fmt.Sprintf("%s.gmi", name), data)
+}
 
 func main() {
 	err := db.Initialize()
@@ -50,7 +64,7 @@ func main() {
 		}
 	})
 
-	g.Renderer = &Template{}
+	g.Renderer = &Template{t: template.Must(template.ParseFS(tmpls, "tmpl/*.gmi"))}
 
 	g.Handle("/", handleHome)
 	g.Handle("/post", handlePost)
