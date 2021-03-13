@@ -86,7 +86,7 @@ func Latest() ([]Post, error) {
 func GetPost(postId uint) (*Post, error) {
 	var post Post
 	err := db.Preload("Comments", func(db *gorm.DB) *gorm.DB {
-		return db.Order("comments.created_at DESC")
+		return db.Order("comments.created_at ASC")
 	}).First(&post, postId).Error
 	return &post, err
 }
