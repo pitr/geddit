@@ -78,7 +78,7 @@ func main() {
 func handleHome(c gig.Context) error {
 	posts, err := db.Latest()
 	if err != nil {
-		return gig.NewErrorFrom(gig.ErrServerUnavailable, "Could not load main page")
+		return c.NoContent(gig.StatusServerUnavailable, "Could not load main page")
 	}
 
 	return c.Render("index", struct {
@@ -97,11 +97,11 @@ func handlePost(c gig.Context) error {
 	}
 	post, err := url.QueryUnescape(q)
 	if err != nil {
-		return gig.NewErrorFrom(gig.ErrServerUnavailable, "Could not save your post")
+		return c.NoContent(gig.StatusInput, "Could not parse your post, enter url and title separated by space")
 	}
 	post = strings.TrimSpace(post)
 	if len(post) < 5 {
-		return gig.NewErrorFrom(gig.ErrBadRequest, "Your post is too short, please check it")
+		return c.NoContent(gig.StatusInput, "Your post is too short, enter url and title separated by space")
 	}
 
 	postChunks := strings.SplitN(post, " ", 2)
@@ -109,15 +109,18 @@ func handlePost(c gig.Context) error {
 	var url, msg string
 	switch len(postChunks) {
 	case 0:
-		return gig.NewErrorFrom(gig.ErrServerUnavailable, "Cannot submit empty post")
+		return c.NoContent(gig.StatusInput, "Cannot submit empty post, enter url and title separated by space")
 	case 1:
-		url = postChunks[0]
-		msg = postChunks[0]
+		return c.NoContent(gig.StatusInput, "Cannot submit url without title, enter url and title separated by space")
 	case 2:
-		url = postChunks[0]
-		msg = postChunks[1]
+		url = strings.TrimSpace(postChunks[0])
+		msg = strings.TrimSpace(postChunks[1])
 	default:
-		return gig.NewErrorFrom(gig.ErrServerUnavailable, "Could not save your post")
+		panic("Impossible error!")
+	}
+
+	if !strings.Contains(url, ".") {
+		return c.NoContent(gig.StatusInput, "First part does not seem to be a url, enter url and title separated by space")
 	}
 
 	if !strings.Contains(url, "://") {
@@ -126,7 +129,7 @@ func handlePost(c gig.Context) error {
 
 	postId, err := db.CreatePost(url, msg)
 	if err != nil {
-		return gig.NewErrorFrom(gig.ErrServerUnavailable, "Could not save your post")
+		return c.NoContent(gig.StatusServerUnavailable, "Could not save your post, please try again")
 	}
 	return c.NoContent(gig.StatusRedirectTemporary, fmt.Sprintf("/s/%d", postId))
 }
@@ -134,12 +137,12 @@ func handlePost(c gig.Context) error {
 func handleShow(c gig.Context) error {
 	postId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return gig.NewErrorFrom(gig.ErrBadRequest, "Invalid path")
+		return c.NoContent(gig.StatusBadRequest, "Invalid path")
 	}
 	post, err := db.GetPost(uint(postId))
 	if err != nil {
 		fmt.Printf("could not show a post: %s", err)
-		return gig.NewErrorFrom(gig.ErrNotFound, fmt.Sprintf("Could not find post id '%d'", postId))
+		return c.NoContent(gig.StatusNotFound, fmt.Sprintf("Could not find post id '%d'", postId))
 	}
 	return c.Render("show", post)
 }
@@ -150,20 +153,20 @@ func handlePostComment(c gig.Context) error {
 	}
 	postId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return gig.NewErrorFrom(gig.ErrBadRequest, "Invalid path")
+		return c.NoContent(gig.StatusBadRequest, "Invalid path")
 	}
 	comment, err := url.QueryUnescape(c.URL().RawQuery)
 	if err != nil {
-		return gig.NewErrorFrom(gig.ErrBadRequest, "Could not parse comment")
+		return c.NoContent(gig.StatusInput, "Could not parse comment, try again")
 	}
 	comment = strings.TrimSpace(comment)
 	if len(comment) < 3 {
-		return gig.NewErrorFrom(gig.ErrBadRequest, "Your comment is too short, please check it")
+		return c.NoContent(gig.StatusInput, "Your comment is too short, please check it")
 	}
 
 	err = db.CreateComment(uint(postId), comment)
 	if err != nil {
-		return gig.NewErrorFrom(gig.ErrServerUnavailable, "Could not save comment")
+		return c.NoContent(gig.StatusServerUnavailable, "Could not save comment, please try again")
 	}
 
 	return c.NoContent(gig.StatusRedirectTemporary, fmt.Sprintf("/s/%d", postId))
