@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"net/url"
 	"os"
 	"time"
@@ -25,8 +26,24 @@ func (p *Post) CommentsCount() int {
 	return len(p.Comments)
 }
 
+func duration(d time.Duration) string {
+	if d.Hours() >= 24 {
+		// Days
+		return fmt.Sprintf("%dd", int(d.Hours()) / 24)
+	} else if d.Hours() >= 1 {
+		// Hours
+		return fmt.Sprintf("%dh", int(d.Hours()))
+	} else if d.Minutes() >= 1 {
+		// Minutes
+		return fmt.Sprintf("%dm", int(d.Minutes()) % 60)
+	} else {
+		// Seconds
+		return fmt.Sprintf("%ds", int(d.Seconds()))
+	}
+}
+
 func (p *Post) Ago() string {
-	return time.Since(p.CreatedAt).Truncate(time.Minute).String() + " ago"
+	return duration(time.Since(p.CreatedAt)) + " ago"
 }
 
 func (p *Post) Date() string {
@@ -49,7 +66,7 @@ type Comment struct {
 }
 
 func (c *Comment) Ago() string {
-	return time.Since(c.CreatedAt).Truncate(time.Minute).String() + " ago"
+	return duration(time.Since(c.CreatedAt)) + " ago"
 }
 
 func getEnv(k, def string) string {
