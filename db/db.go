@@ -9,7 +9,7 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
-const latestMax = 30
+const LatestMax = 30
 
 var db *gorm.DB
 
@@ -77,9 +77,9 @@ func Initialize() (err error) {
 	return db.AutoMigrate(&Post{}, &Comment{}, &Pageview{}).Error
 }
 
-func Latest() ([]Post, error) {
+func Latest(page int) ([]Post, error) {
 	var posts []Post
-	q := db.Preload("Comments").Order("created_at desc").Limit(latestMax).Find(&posts)
+	q := db.Preload("Comments").Order("created_at desc").Offset(LatestMax * page).Limit(LatestMax).Find(&posts)
 	return posts, q.Error
 }
 
@@ -115,6 +115,6 @@ func CountPageview() error {
 
 func GetPageviewStats() ([]Pageview, error) {
 	var views []Pageview
-	q := db.Order("day desc").Limit(100).Find(&views)
+	q := db.Order("day desc").Find(&views)
 	return views, q.Error
 }

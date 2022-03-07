@@ -26,7 +26,7 @@ build/$(BINARY): $(SOURCES)
 build/linux/$(BINARY): $(SOURCES)
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build $(BUILD_FLAGS) -o build/linux/$(BINARY) -ldflags "$(LDFLAGS)" .
 
-build.docker: build.local
+build.docker:
 	docker build --rm -t "$(IMAGE):$(VERSION)" -f $(DOCKERFILE) .
 
 deploy: build.docker

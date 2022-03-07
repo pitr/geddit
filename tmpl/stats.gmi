@@ -2,7 +2,9 @@
 
 => / 🏠 Home
 
-{{range .}}
+{{.Sparkline}}
+
+{{range .Result}}
 {{.Day}} - {{.Count}}
 {{else}}
 No stats yet :(

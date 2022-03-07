@@ -1,11 +1,10 @@
 package main
 
 import (
-	"crypto/tls"
 	"embed"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"math"
 	"net/url"
 	"strconv"
 	"strings"
@@ -34,26 +33,6 @@ func main() {
 	}
 
 	g := gig.Default()
-
-	g.TLSConfig.GetCertificate = func(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
-		if !strings.Contains(hello.ServerName, ".glv.one") {
-			return nil, nil
-		}
-		c, err := ioutil.ReadFile("/meta/credentials/letsencrypt/current/fullchain.pem")
-		if err != nil {
-			return nil, err
-		}
-		k, err := ioutil.ReadFile("/meta/credentials/letsencrypt/current/privkey.pem")
-		if err != nil {
-			return nil, err
-		}
-		cert, err := tls.X509KeyPair(c, k)
-		if err != nil {
-			return nil, err
-		}
-		return &cert, nil
-	}
-
 	g.Use(func(next gig.HandlerFunc) gig.HandlerFunc {
 		return func(c gig.Context) (err error) {
 			err = next(c)
@@ -72,21 +51,43 @@ func main() {
 	g.Handle("/c/:id", handlePostComment)
 	g.Handle("/stats", handleStats, gig.CertAuth(gig.ValidateHasCertificate))
 
-	panic(g.Run("geddit.crt", "geddit.key"))
+	panic(g.Run("/meta/credentials/letsencrypt/current/fullchain.pem", "/meta/credentials/letsencrypt/current/privkey.pem"))
 }
 
 func handleHome(c gig.Context) error {
-	posts, err := db.Latest()
+	var (
+		page      = 1
+		nextPage  = 0
+		err       error
+		pageparam = c.URL().Query().Get("page")
+	)
+
+	if pageparam != "" {
+		page, err = strconv.Atoi(pageparam)
+		if err != nil {
+			return c.NoContent(gig.StatusBadRequest, "Invalid path")
+		}
+		if page < 1 || page > 100 {
+			return c.NoContent(gig.StatusBadRequest, "Invalid path")
+		}
+	}
+
+	posts, err := db.Latest(page - 1)
 	if err != nil {
 		return c.NoContent(gig.StatusServerUnavailable, "Could not load main page")
 	}
+	if len(posts) == db.LatestMax {
+		nextPage = page + 1
+	}
 
 	return c.Render("index", struct {
-		Posts []db.Post
-		Old   bool
+		Posts    []db.Post
+		Page     int
+		NextPage int
 	}{
-		Posts: posts,
-		Old:   strings.Contains(c.RequestURI(), "geddit.pitr.ca"),
+		Posts:    posts,
+		Page:     page,
+		NextPage: nextPage,
 	})
 }
 
@@ -125,6 +126,9 @@ func handlePost(c gig.Context) error {
 
 	if !strings.Contains(url, "://") {
 		url = "gemini://" + url
+	}
+	if !strings.HasPrefix(url, "gemini://") {
+		return c.NoContent(gig.StatusInput, "Only Gemini URLs are allowed, sorry")
 	}
 
 	postId, err := db.CreatePost(url, msg)
@@ -172,10 +176,41 @@ func handlePostComment(c gig.Context) error {
 	return c.NoContent(gig.StatusRedirectTemporary, fmt.Sprintf("/s/%d", postId))
 }
 
+var levels = []rune("▁▂▃▄▅▆▇█")
+
 func handleStats(c gig.Context) error {
 	result, err := db.GetPageviewStats()
 	if err != nil {
 		return err
 	}
-	return c.Render("stats", result)
+
+	min := 0
+	max := 0
+	if len(result) > 0 {
+		min = result[0].Count
+	}
+	for _, r := range result {
+		if r.Count < min {
+			min = r.Count
+		}
+		if r.Count > max {
+			max = r.Count
+		}
+	}
+	if max == min {
+		max = min + 1
+	}
+	spark := make([]rune, len(result))
+	for i, r := range result {
+		j := int(math.Floor(float64(len(levels)-1.) * float64(r.Count-min) / float64(max-min)))
+		spark[len(result)-1-i] = levels[j]
+	}
+
+	return c.Render("stats", struct {
+		Result    []db.Pageview
+		Sparkline string
+	}{
+		Result:    result[:100],
+		Sparkline: string(spark),
+	})
 }
